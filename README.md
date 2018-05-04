@@ -1,2 +1,6 @@
 # raspberrypi_scripts
-Various scripts I use on a raspberry pi
+
+
+This repository is for the various scripts written for the raspberry pi. 
+
+
