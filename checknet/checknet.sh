@@ -76,7 +76,7 @@ then
 fi
 
 
-if [ $REMOTESTATE -eq $LOCALSTATE ]
+if [ $REMOTESTATE -eq 1 -a $LOCALSTATE -eq 1 ]
 then
         echo "Shutting System Down at $(date)" >> /home/pi/netlog.log
        sudo shutdown -h now
