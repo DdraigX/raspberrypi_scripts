@@ -3,9 +3,9 @@
 # The purpose of this script is to periodically ping an external IP and an 
 # internal IP, and if they're down, then shutdown the system.
 
-check_interval=5
-external_ip="quick.undo.it"
-internal_ip="192.168.50.1"
+check_interval=3h
+external_ip="1.1.1.1"
+internal_ip="192.168.1.1"
 
 outage="FALSE"
 
@@ -20,36 +20,47 @@ while true; do
 	sleep $check_interval
 
 	# Ping the external IP.
-	func_ping $external_ip 
-	# If it's down, then set the outage flag.
-	if [ "$?" != "0" ]; then
-		echo "Failed to Ping $external_ip"
-		outage="TRUE"
-	else
-		echo "Ping success : $external_ip"
-		# seting back to FALSE here in case the IP came back
-		# since our last check
-		outage="FALSE"
-	fi
+	for (( i=0; i<=5; i++ ))
+	do
+		func_ping $external_ip 
+		sleep 30s
+		# If it's down, then set the outage flag.
+		if [ "$?" != "0" ]; then
+			echo "$(date) : Failed to Ping $external_ip" >> /var/log/netlog.log
+			outage="TRUE"
+			echo $i
+		else
+			echo "$(date) : Ping success : $external_ip" >> /var/log/netlog.log
+			# seting back to FALSE here in case the IP came back
+			# since our last check
+			outage="FALSE"
+
+		fi
+	done
 
 	# If the outage flag is true, then we'll check the internal
 	# IP address.  No use in checking it every time if BOTH are 
 	# needed to be true in order to shut the system down.
 	if [ "$outage" == "TRUE" ]; then
-		func_ping $internal_ip
-		if [ "$?" != "0" ]; then 
-			echo "Internal IP down."
-			# Not really necessary, but it's here for clarity.
-			outage="TRUE"
-		else
-			echo "continue looping"
-			#in order to continue looping, we'll set the outage flag back to 0
-			outage="FALSE"
-		fi
+
+		for (( i=0; i<=5; i++ ))
+		do
+			func_ping $internal_ip
+			sleep 30s
+			if [ "$?" != "0" ]; then 
+				echo "$(date) : Internal IP down." >> /var/log/netlog.log
+				# Not really necessary, but it's here for clarity.
+				outage="TRUE"
+			else
+				#echo "continue looping"
+				#in order to continue looping, we'll set the outage flag back to 0
+				outage="FALSE"
+			fi
+		done
 	fi
 
 	# The final decision
 	if [ "$outage" == "TRUE" ]; then
-		shutdown
+		echo "shutdown initiated" >> /var/log/netlog.log
 	fi
 done
