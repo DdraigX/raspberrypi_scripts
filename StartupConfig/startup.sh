@@ -3,5 +3,8 @@
 sudo apt update 
 sudo apt -y dist-update 
 sudo apt -y upgrade
+sudo sed -i 's/CONF_SWAPSIZE=100/CONF_SWAPSIZE=2048/' /etc/dphys-swapfile
 
-##TODO: Add swap file changes
+sudo /etc/init.d/dphys-swapfile stop
+sudo /etc/init.d/dphys-swapfile start
+sudo apt install -y tmux
